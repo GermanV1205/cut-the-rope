@@ -6,11 +6,12 @@ export default class MainMenu extends Phaser.Scene {
   }
 
   preload() {
-    // Cargamos las imagenes
+    // Cargamos las imagenes y la musica del menu
     this.load.image("fondo", "/src/assets/menu-background.png");
     this.load.image("logo", "/src/assets/logo.png");
     this.load.image("btn_jugar", "/src/assets/btn_play.png");
     this.load.image("btn_opciones", "/src/assets/btn_options.png");
+    this.load.audio("musica_menu", "/src/audio/menu-music.mp3");
   }
 
   create() {
@@ -19,17 +20,30 @@ export default class MainMenu extends Phaser.Scene {
 
     //Creamos el fondo, el logo y los botones
     this.add.image(centerX, centerY, "fondo");
-    this.add.image(centerX, centerY - 200, "logo");
+    this.add.image(centerX - 450, centerY, "logo").setScale(2.2);
+
+    // Leemos el volumen de la música guardado (o 0.5 por defecto)
+    let savedMusicVol = parseFloat(
+      localStorage.getItem("musicVolume") ?? "0.5",
+    );
+
+    if (!this.sound.get("musica_menu")) {
+      const music = this.sound.add("musica_menu", {
+        loop: true,
+        volume: savedMusicVol, // Aplicamos el volumen aquí
+      });
+      music.play();
+    }
 
     // Creamos el boton de jugar
     const playButton = this.add
-      .image(centerX, centerY + 175, "btn_jugar")
+      .image(centerX + 450, centerY - 100, "btn_jugar")
       .setInteractive()
       .setScale(2.5); // Aumentamos el tamaño
 
     // Creamos el texto del botón de jugar
     const playText = this.add
-      .text(centerX, centerY + 175, "JUGAR", {
+      .text(centerX + 450, centerY - 100, "JUGAR", {
         fontSize: "70px",
         fontStyle: "bold",
         color: "#ffffff", // Texto blanco
@@ -40,13 +54,13 @@ export default class MainMenu extends Phaser.Scene {
 
     // Creamos el boton de opciones
     const optionsButton = this.add
-      .image(centerX, centerY + 350, "btn_opciones")
+      .image(centerX + 450, centerY + 100, "btn_opciones")
       .setInteractive()
       .setScale(2.5); // Aumentamos un poco el tamaño
 
     // Creamos el texto del botón de opciones
     const optionsText = this.add
-      .text(centerX, centerY + 350, "OPCIONES", {
+      .text(centerX + 450, centerY + 100, "OPCIONES", {
         fontSize: "70px",
         fontStyle: "bold",
         color: "#ffffff", // Texto blanco
@@ -65,7 +79,7 @@ export default class MainMenu extends Phaser.Scene {
       playText.setColor("#ffffff"); // El texto vuelve a blanco
     });
     playButton.on("pointerdown", () => {
-      this.scene.start("GameScene");
+      this.scene.start("LevelSelector");
     });
 
     // Efectos visuales para "Opciones"

@@ -1,6 +1,7 @@
 // src/main.js
 import Phaser from "phaser";
 import MainMenu from "./scenes/MainMenu";
+import LevelSelector from "./scenes/LevelSelector";
 import GameScene from "./scenes/GameScene";
 import OptionsScene from "./scenes/OptionsScene";
 
@@ -20,8 +21,8 @@ const config = {
       debug: false,
     },
   },
-  // La primera escena en el array es la que arranca por defecto
-  scene: [MainMenu, GameScene, OptionsScene],
+
+  scene: [MainMenu, LevelSelector, GameScene, OptionsScene],
 };
 
 const game = new Phaser.Game(config);
