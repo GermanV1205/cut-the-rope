@@ -1,29 +1,27 @@
+// src/main.js
 import Phaser from "phaser";
-
-// Aquí importaremos las escenas más adelante
-// import BootScene from './scenes/BootScene';
-// import MainMenu from './scenes/MainMenu';
-// import GameScene from './scenes/GameScene';
+import MainMenu from "./scenes/MainMenu";
+import GameScene from "./scenes/GameScene";
+import OptionsScene from "./scenes/OptionsScene";
 
 const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
-  parent: "game-container", // El div donde vivirá el juego
+  width: 1920,
+  height: 1080,
+  parent: "game-container",
   scale: {
-    mode: Phaser.Scale.FIT, // Escala automáticamente manteniendo la proporción
-    autoCenter: Phaser.Scale.CENTER_BOTH, // Centra el juego en la pantalla
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   physics: {
     default: "arcade",
     arcade: {
-      gravity: { y: 300 }, // Gravedad necesaria para el estilo "Cut the Rope"
-      debug: false, // Cambia a true para ver las "cajas" de colisión mientras programas
+      gravity: { y: 300 },
+      debug: false,
     },
   },
-  scene: [
-    // BootScene, MainMenu, GameScene
-  ],
+  // La primera escena en el array es la que arranca por defecto
+  scene: [MainMenu, GameScene, OptionsScene],
 };
 
 const game = new Phaser.Game(config);
