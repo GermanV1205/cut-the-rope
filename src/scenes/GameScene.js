@@ -28,14 +28,71 @@ const LEVELS = {
     instruction: "Corta ambas cuerdas para llegar al robot. ¡Empieza fácil!",
   },
   2: {
-    placeholder: true,
-    intro: "Nivel 2 - En desarrollo",
-    instruction: "⚠️ Aquí va el Nivel 2 - Esta versión solo tiene el Nivel 1 implementado",
+    background: "space_background",
+    gravityY: 800,
+    timeLimit: 85,
+    robot: { x: 1300, y: 885 },
+    battery: { x: 620, y: 550 },
+    anchors: [
+      { x: 800, y: 200 },
+      { x: 1100, y: 220 },
+    ],
+    stars: [
+      { x: 700, y: 520 },
+      { x: 960, y: 450 },
+      { x: 1220, y: 520 },
+    ],
+    hazard: {
+      x: 950,
+      y: 720,
+      leftBound: 800,
+      rightBound: 1100,
+      speed: 80,
+      threshold: 35,
+    },
+    floorY: 995,
+    supportY: 210,
+    stiffness: 0.16,
+    damping: 0.008,
+    constraintStrength: 0.78,
+    segmentLength: 22,
+    swingMultiplier: 1.1,
+    intro: "Nivel 2",
+    instruction: "Batería a la izquierda — cuidado con el obstáculo.",
   },
   3: {
-    placeholder: true,
-    intro: "Nivel 3 - En desarrollo",
-    instruction: "⚠️ Aquí va el Nivel 3 - Esta versión solo tiene el Nivel 1 implementado",
+    background: "space_background",
+    gravityY: 800,
+    timeLimit: 80,
+    robot: { x: 960, y: 885 },
+    battery: { x: 500, y: 520 },
+    anchors: [
+      { x: 600, y: 180 },
+      { x: 960, y: 160 },
+      { x: 1320, y: 190 },
+    ],
+    stars: [
+      { x: 620, y: 480 },
+      { x: 960, y: 420 },
+      { x: 1300, y: 490 },
+    ],
+    hazard: {
+      x: 900,
+      y: 740,
+      leftBound: 750,
+      rightBound: 1050,
+      speed: 100,
+      threshold: 35,
+    },
+    floorY: 995,
+    supportY: 180,
+    stiffness: 0.14,
+    damping: 0.008,
+    constraintStrength: 0.78,
+    segmentLength: 24,
+    swingMultiplier: 1.15,
+    intro: "Nivel 3",
+    instruction: "3 cuerdas, gran distancia y obstáculo — ¡El reto final!",
   },
 };
 
@@ -70,57 +127,6 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     this.level = LEVELS[this.levelNumber] ?? LEVELS[1];
-    
-    // Si es un nivel placeholder, mostrar mensaje
-    if (this.level.placeholder) {
-      const { width, height } = this.cameras.main;
-      const centerX = width / 2;
-      const centerY = height / 2;
-      
-      this.add.image(centerX, centerY, "game_background").setDisplaySize(width, height);
-      this.add.rectangle(centerX, centerY, width, height, 0x000000, 0.8).setDepth(100);
-      this.add.text(centerX, centerY - 100, this.level.intro, {
-        fontFamily: "Arial",
-        fontSize: "64px",
-        fontStyle: "bold",
-        color: "#ffff00",
-        stroke: "#000000",
-        strokeThickness: 8,
-      }).setOrigin(0.5).setDepth(101);
-      this.add.text(centerX, centerY + 50, this.level.instruction, {
-        fontFamily: "Arial",
-        fontSize: "32px",
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 5,
-        align: "center",
-        wordWrap: { width: 900 },
-      }).setOrigin(0.5).setDepth(101);
-      this.add.text(centerX, centerY + 200, "Vuelve al selector de niveles", {
-        fontFamily: "Arial",
-        fontSize: "28px",
-        color: "#aaaaaa",
-        stroke: "#000000",
-        strokeThickness: 4,
-      }).setOrigin(0.5).setDepth(101);
-      
-      const buttonBg = this.add.rectangle(centerX, centerY + 300, 250, 60, 0x132a45, 0.9)
-        .setStrokeStyle(3, 0xffffff, 0.9).setInteractive({ useHandCursor: true }).setDepth(101);
-      const buttonText = this.add.text(centerX, centerY + 300, "VOLVER AL MENÚ", {
-        fontFamily: "Arial",
-        fontSize: "24px",
-        fontStyle: "bold",
-        color: "#ffffff",
-      }).setOrigin(0.5).setDepth(102);
-      buttonBg.on("pointerover", () => buttonBg.setFillStyle(0x285582, 0.96));
-      buttonBg.on("pointerout", () => buttonBg.setFillStyle(0x132a45, 0.9));
-      buttonBg.on("pointerdown", () => {
-        this.sound.stopAll();
-        this.scene.start("LevelSelector");
-      });
-      return;
-    }
-    
     this.gameState = "playing";
     this.collectedStars = 0;
     this.score = 0;
@@ -147,8 +153,8 @@ export default class GameScene extends Phaser.Scene {
 
     this.add.image(this.centerX, this.centerY, "game_background").setDisplaySize(width, height);
 
-    const gapByLevel = { 1: 520 };
-    const gap = gapByLevel[1] ?? 500;
+    const gapByLevel = { 1: 520, 2: 460, 3: 420 };
+    const gap = gapByLevel[this.levelNumber] ?? 500;
     const leftWidth = Math.floor((width - gap) / 2);
     const rightWidth = leftWidth;
 
@@ -211,6 +217,14 @@ export default class GameScene extends Phaser.Scene {
     });
 
     this.physics.add.overlap(this.battery, this.starGroup, this.collectStar, null, this);
+
+    if (this.level.hazard) {
+      this.hazard = this.physics.add.image(this.level.hazard.x, this.level.hazard.y, "game_knife");
+      this.hazard.setScale(1.05);
+      this.hazard.body.allowGravity = false;
+      this.hazard.setImmovable(true);
+      this.hazardDirection = 1;
+    }
 
     this.ropeGraphics = this.add.graphics();
     this.pointerTrail = this.add.graphics();
@@ -293,6 +307,24 @@ export default class GameScene extends Phaser.Scene {
       this.battery.body.allowGravity = false;
     } else {
       this.battery.body.allowGravity = true;
+    }
+
+    if (this.hazard) {
+      const hazardSpeed = this.level.hazard.speed * delta / 1000 * this.hazardDirection;
+      this.hazard.x += hazardSpeed;
+      if (this.hazard.x <= this.level.hazard.leftBound) {
+        this.hazard.x = this.level.hazard.leftBound;
+        this.hazardDirection = 1;
+      }
+      if (this.hazard.x >= this.level.hazard.rightBound) {
+        this.hazard.x = this.level.hazard.rightBound;
+        this.hazardDirection = -1;
+      }
+      const thresh = this.level.hazard.threshold ?? 44;
+      const dHaz = Phaser.Math.Distance.Between(this.battery.x, this.battery.y, this.hazard.x, this.hazard.y);
+      if (dHaz < thresh) {
+        this.handleHazardHit();
+      }
     }
 
     this.enforceConstraints(delta);
@@ -498,8 +530,8 @@ export default class GameScene extends Phaser.Scene {
     this.score += Math.floor(this.timeRemaining * 10);
     this.playSfx("game_win", 0.45);
 
-    // En v1 solo existe nivel 1
-    this.unlockedLevel = 1;
+    const nextLevel = Math.min(this.levelNumber + 1, 3);
+    this.unlockedLevel = Math.max(this.unlockedLevel, nextLevel);
     localStorage.setItem("unlockedLevel", String(this.unlockedLevel));
     this.saveHighScore();
 
@@ -508,6 +540,14 @@ export default class GameScene extends Phaser.Scene {
       `Tu robot ya recibió la batería.\n\nPuntaje final: ${this.score}\nEstrellas: ${this.collectedStars}/3`,
       true,
     );
+  }
+
+  handleHazardHit() {
+    if (this.gameState !== "playing") {
+      return;
+    }
+
+    this.handleLoss("La batería tocó el obstáculo móvil.");
   }
 
   handleLoss(message) {
